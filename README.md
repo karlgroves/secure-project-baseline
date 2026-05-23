@@ -20,7 +20,7 @@ No paid tier required, no private-repository restriction, no required SaaS subsc
 ## What it covers
 
 | Security area | Tool |
-|---|---|
+| --- | --- |
 | Secrets | detect-secrets (Gitleaks CLI / TruffleHog optional) |
 | SAST | Semgrep Community Edition |
 | Dependencies | OSV-Scanner, OWASP Dependency-Check, native `audit` |
