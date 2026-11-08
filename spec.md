@@ -460,6 +460,9 @@ The package must add the following directory structure:
     security-automation.md
     security-exceptions.md
     security-test-matrix.md
+/quality
+  /config
+    quality-thresholds.json
 ```
 
 ## 7. Required NPM Scripts
@@ -850,6 +853,8 @@ Critical findings require explicit owner approval.
 Secrets may not be excepted if confirmed valid.
 Authorization bypasses may not be excepted.
 ```
+
+The same process covers code quality thresholds. See §29.2 for the fields a quality exception records.
 
 ## 13. Required CI/CD Behavior
 
@@ -1475,3 +1480,112 @@ API key and token scope tests
 ```
 
 Automated scanners are useful, but the highest-risk web application security failures are often logic and authorization flaws that only project-specific tests can reliably catch.
+
+## 29. Default Code Quality Thresholds
+
+This section sets one fleet-wide floor for duplication and coverage checks, in the same way §11 sets default security thresholds. It replaces per-repository numbers that drifted without a decision.
+
+The package must include `quality/config/quality-thresholds.json`:
+
+```json
+{
+  "mode": "floor",
+  "duplication": {
+    "tool": "jscpd",
+    "threshold": 1,
+    "minTokens": 50,
+    "ignore": [
+      "test and spec files",
+      "test directories",
+      "generated code",
+      "build output",
+      "coverage reports"
+    ]
+  },
+  "coverage": {
+    "lines": 80,
+    "statements": 80,
+    "branches": 70,
+    "functions": 75
+  }
+}
+```
+
+The `ignore` entries name categories. Each project maps them to its own globs (for example `**/*.test.*`, `**/__tests__/**`, `**/dist/**`). Test code is excluded because repeated arrange/act/assert structure is a pattern, not debt. Generated code is excluded because nobody edits it by hand.
+
+### 29.1 Floor Semantics
+
+These numbers are a floor, not a target. They may only make a project stricter.
+
+```text
+A project that is already stricter than the floor keeps its stricter number.
+A project that is below the floor records a §12 exception at its current number.
+A project's number may move toward stricter, never toward looser.
+```
+
+What "stricter" means for each value:
+
+| Value | Floor | Stricter means |
+| --- | --- | --- |
+| jscpd `threshold` | `1` | lower (`0` is stricter than `1`) |
+| jscpd `minTokens` | `50` | lower (smaller clones are detected) |
+| jscpd ignore list | the `ignore` categories above | fewer exclusions (scanning test code too is allowed) |
+| coverage `lines` | `80` | higher |
+| coverage `statements` | `80` | higher |
+| coverage `branches` | `70` | higher |
+| coverage `functions` | `75` | higher |
+
+Examples:
+
+```text
+jscpd threshold 0 stays 0. Adopting this floor does not raise it to 1.
+coverage branches 80, 85, 90 or 100 stays where it is. Adopting this floor does not lower it to 70.
+jscpd minTokens 150 is below the floor. It needs a §12 exception or a change to 50 or lower.
+coverage lines 45 is below the floor. It needs a §12 exception at 45 and must ratchet upward.
+```
+
+`minTokens` is part of the floor, not a tuning knob. A raised `minTokens` finds less duplication while the project reports the same `threshold`, so a project may not meet the `threshold` floor by raising `minTokens`.
+
+### 29.2 Exceptions
+
+A project below the floor on any value must record a dated exception under §12. The §12 rules apply unchanged: no permanent exceptions, and no exception may exceed 90 days without reapproval.
+
+Each quality exception must include:
+
+```text
+exception ID
+tool name
+metric
+floor value
+current value
+reason
+owner
+expiration date
+next target value
+link to ticket
+```
+
+Example:
+
+```yaml
+exceptions:
+  - id: "QUALITY-coverage-branches"
+    tool: "jest"
+    metric: "coverage.branches"
+    floor: 70
+    current: 45
+    reason: "Legacy request handlers predate the test suite"
+    owner: "repo-owner@example.com"
+    expires: "2027-02-01"
+    next_target: 55
+    ticket: "PROJ-123"
+```
+
+Rules:
+
+```text
+The current value is the number the project measures today, not a lower number that is easier to pass.
+On reapproval, current must be at least the previous current value.
+A quality exception may never lower a number that already meets the floor.
+The exception is removed once the project meets the floor.
+```
