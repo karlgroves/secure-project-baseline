@@ -460,6 +460,9 @@ The package must add the following directory structure:
     security-automation.md
     security-exceptions.md
     security-test-matrix.md
+/quality
+  /config
+    quality-thresholds.json
 ```
 
 ## 7. Required NPM Scripts
@@ -1526,7 +1529,7 @@ What "stricter" means for each value:
 | --- | --- | --- |
 | jscpd `threshold` | `1` | lower (`0` is stricter than `1`) |
 | jscpd `minTokens` | `50` | lower (smaller clones are detected) |
-| jscpd ignore list | test and generated code | fewer exclusions (scanning test code too is allowed) |
+| jscpd ignore list | the `ignore` categories above | fewer exclusions (scanning test code too is allowed) |
 | coverage `lines` | `80` | higher |
 | coverage `statements` | `80` | higher |
 | coverage `branches` | `70` | higher |
@@ -1550,6 +1553,7 @@ A project below the floor on any value must record a dated exception under §12.
 Each quality exception must include:
 
 ```text
+exception ID
 tool name
 metric
 floor value

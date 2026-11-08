@@ -55,6 +55,8 @@ security/
                # business-logic security specs
   reports/     # generated scan artifacts
   docs/        # security-automation.md, security-exceptions.md, security-test-matrix.md
+quality/
+  config/      # quality-thresholds.json
 ```
 
 ## Getting started
@@ -78,6 +80,8 @@ For non-Node projects, equivalent `make` targets (`make security`, `make securit
 ## Exceptions
 
 Findings can be excepted, but every exception must be explicit, reviewed, and time-limited — finding ID, tool, affected target, reason, risk owner, expiration date, compensating control, and ticket link. No permanent exceptions; none may exceed 90 days without reapproval. Confirmed valid secrets and authorization bypasses can never be excepted. See [`spec.md` §12](./spec.md).
+
+Duplication (jscpd) and coverage thresholds are a fleet floor, not a target. Projects stricter than the floor keep their numbers, and projects below it record a dated exception and ratchet upward. See [`spec.md` §29](./spec.md).
 
 ## Adoption checklist
 
